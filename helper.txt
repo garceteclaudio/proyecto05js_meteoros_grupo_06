@@ -1,0 +1,7 @@
+Fecha de entrega lunes
+
+npm init -y
+npm install express
+npm install nodemon
+npm install bulma
+npm install phaser
