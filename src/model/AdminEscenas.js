@@ -26,9 +26,12 @@ export default class AdminEscenas {
   detenerEscenasActivas() {
     const escenasActivas = this.game.scene.getScenes(true);
     escenasActivas.forEach((escena) => {
+      escena.anims.remove("izquierda");
+      escena.anims.remove("normal");
+      escena.anims.remove("derecha");
       this.game.scene.stop(escena.scene.key);
     });
-  }
+  }  
 
   cambiarEscena(escenaKey) {
     this.pausarMusicaFondo();
