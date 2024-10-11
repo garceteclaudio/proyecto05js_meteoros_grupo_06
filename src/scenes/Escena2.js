@@ -16,6 +16,9 @@ export default class Escena2 extends Phaser.Scene {
     this.sonidoBala = null;
     this.sonidoExplosion = null;
     this.fondoEspacio = null;
+    this.boss = null; // Boss enemy
+    this.grupoBalasBoss = null; // Group for boss bullets
+    this.siguienteDisparoBoss = 0; // Next bullet firing time for the boss
   }
   generarMeteoros() {
     if (this.juegoTerminado) return;
@@ -87,6 +90,49 @@ export default class Escena2 extends Phaser.Scene {
     enemigoNave.destroy();
   }
 
+  aparecerBoss() {
+    this.boss = this.physics.add.sprite(
+      800,
+      Phaser.Math.Between(50, 550),
+      "boss"
+    );
+    this.boss.setVelocityX(-200); // Move the boss left
+    this.grupoBalasBoss = this.physics.add.group(); // Initialize the bullets group
+
+    // Start shooting bullets every second
+    this.time.addEvent({
+      delay: 100,
+      callback: this.dispararBalaBoss,
+      callbackScope: this,
+      loop: true,
+    });
+  }
+
+  dispararBalaBoss() {
+    const tiempoActual = this.time.now;
+
+    if (tiempoActual > this.siguienteDisparoBoss) {
+      // Get a bullet from the existing grupoBalas
+      const balaBoss = this.grupoBalasBoss.get(this.boss.x - 50, this.boss.y);
+
+      if (balaBoss) {
+        balaBoss.setActive(true);
+        balaBoss.setVisible(true);
+        balaBoss.setVelocityX(-200); // Bullet moves to the left
+        this.siguienteDisparoBoss = tiempoActual + 500; // Next shot in 1 second
+        //this.sonidoBala.play(); // Optional: Play the bullet sound
+      }
+    }
+  }
+
+  colisionJugadorBoss(jugador, boss) {
+    // Handle player collision with boss
+    this.scene.start("GameOver", { puntaje: this.puntaje });
+    this.musicaFondo.stop();
+    this.puntaje = 0;
+    this.juegoTerminado = true;
+  }
+
   preload() {
     this.load.image("espacio", "/public/resources/images/espacio.png");
     this.load.spritesheet("nave", "/public/resources/images/nave.png", {
@@ -103,6 +149,7 @@ export default class Escena2 extends Phaser.Scene {
       "sonidoExplosion",
       "/public/resources/sounds/sonidoExplosion.mp3"
     );
+    this.load.image("boss", "/public/resources/images/boss.png");
   }
 
   create() {
@@ -116,9 +163,11 @@ export default class Escena2 extends Phaser.Scene {
     this.jugador.setCollideWorldBounds(true);
     this.jugador.setAngle(90);
 
+    this.time.delayedCall(3000, this.aparecerBoss, [], this);
+
     this.grupoBalas = this.physics.add.group({
       defaultKey: "bala2",
-      maxSize: 20,
+      maxSize: 50,
     });
 
     this.grupoMeteoros = this.physics.add.group();
@@ -172,6 +221,7 @@ export default class Escena2 extends Phaser.Scene {
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
 
+    // Colisiones
     this.physics.add.collider(
       this.jugador,
       this.grupoMeteoros,
@@ -184,8 +234,6 @@ export default class Escena2 extends Phaser.Scene {
       null,
       this
     );
-
-    // Colisiones
     this.physics.add.collider(
       this.grupoBalas,
       this.grupoMeteoros,
@@ -209,6 +257,15 @@ export default class Escena2 extends Phaser.Scene {
       null,
       this
     );
+    /*
+    this.physics.add.collider(
+      this.jugador,
+      this.grupoBalasBoss,
+      this.colisionJugadorBalaBoss,
+      null,
+      this
+    );
+*/
     // FIN COLISIONES
     this.textoDePuntaje = this.add.text(16, 16, "Puntaje: 0", {
       fontSize: "32px",
