@@ -44,6 +44,7 @@ export default class Escena2 extends Phaser.Scene {
       }
     }
   }
+
   destruirMeteoro(bala, meteoro) {
     meteoro.destroy();
     bala.destroy();
@@ -89,19 +90,20 @@ export default class Escena2 extends Phaser.Scene {
     this.juegoTerminado = true;
     enemigoNave.destroy();
   }
-
+  /// BOSS
   aparecerBoss() {
     this.boss = this.physics.add.sprite(
       800,
       Phaser.Math.Between(50, 550),
       "boss"
     );
-    this.boss.setVelocityX(-200); // Move the boss left
-    this.grupoBalasBoss = this.physics.add.group(); // Initialize the bullets group
+    this.boss.setVelocityX(-200); // Mueve el boss a la izquierda
 
-    // Start shooting bullets every second
+    console.log("Boss ha aparecido y comenzará a disparar.");
+
+    // Iniciar disparos
     this.time.addEvent({
-      delay: 100,
+      delay: 500,
       callback: this.dispararBalaBoss,
       callbackScope: this,
       loop: true,
@@ -111,27 +113,32 @@ export default class Escena2 extends Phaser.Scene {
   dispararBalaBoss() {
     const tiempoActual = this.time.now;
 
+    // Verificar si es tiempo de disparar
     if (tiempoActual > this.siguienteDisparoBoss) {
-      // Get a bullet from the existing grupoBalas
-      const balaBoss = this.grupoBalasBoss.get(this.boss.x - 50, this.boss.y);
+      const balaBoss = this.grupoBalasBoss.get();
 
+      // Verificar si se obtuvo una bala
       if (balaBoss) {
+        // Colocar la bala en la posición del boss
         balaBoss.setActive(true);
         balaBoss.setVisible(true);
-        balaBoss.setVelocityX(-200); // Bullet moves to the left
-        this.siguienteDisparoBoss = tiempoActual + 500; // Next shot in 1 second
-        //this.sonidoBala.play(); // Optional: Play the bullet sound
+        balaBoss.setPosition(this.boss.x - 50, this.boss.y);
+        balaBoss.setVelocityX(-200); // La bala se mueve hacia la izquierda
+
+        // Actualizar el tiempo para el próximo disparo
+        this.siguienteDisparoBoss = tiempoActual + 500; // Ajustar el intervalo de disparo
+        this.sonidoBala.play(); // Reproducir el sonido de la bala
       }
     }
   }
 
-  colisionJugadorBoss(jugador, boss) {
-    // Handle player collision with boss
+  colisionJugadorBalaBoss(jugador, bala) {
+    bala.destroy();
     this.scene.start("GameOver", { puntaje: this.puntaje });
     this.musicaFondo.stop();
     this.puntaje = 0;
-    this.juegoTerminado = true;
   }
+  /// FIN BOSS
 
   preload() {
     this.load.image("espacio", "/public/resources/images/espacio.png");
@@ -170,6 +177,11 @@ export default class Escena2 extends Phaser.Scene {
       maxSize: 50,
     });
 
+    this.grupoBalasBoss = this.physics.add.group({
+      defaultKey: "bala2", // Use a different key if needed
+      maxSize: 50,
+    });
+
     this.grupoMeteoros = this.physics.add.group();
     this.grupoEnemigosNave = this.physics.add.group();
 
@@ -205,14 +217,15 @@ export default class Escena2 extends Phaser.Scene {
       callbackScope: this,
       loop: true,
     });
+
     this.incrementoPuntajeEvento = this.time.addEvent({
       delay: 100,
       callback: this.incrementarPuntaje,
       callbackScope: this,
       loop: true,
     });
-    this.cursors = this.input.keyboard.createCursorKeys();
 
+    this.cursors = this.input.keyboard.createCursorKeys();
     this.teclas = this.input.keyboard.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.W,
       left: Phaser.Input.Keyboard.KeyCodes.A,
@@ -227,13 +240,14 @@ export default class Escena2 extends Phaser.Scene {
       this.grupoMeteoros,
       (jugador, meteoro) => {
         meteoro.destroy();
-        this.scene.start("GameOver", { puntaje: this.puntaje }); // Inicia la escena GameOver y pasa el puntaje
+        this.scene.start("GameOver", { puntaje: this.puntaje });
         this.musicaFondo.stop();
         this.puntaje = 0;
       },
       null,
       this
     );
+
     this.physics.add.collider(
       this.grupoBalas,
       this.grupoMeteoros,
@@ -241,7 +255,6 @@ export default class Escena2 extends Phaser.Scene {
       null,
       this
     );
-
     this.physics.add.collider(
       this.jugador,
       this.grupoEnemigosNave,
@@ -249,7 +262,6 @@ export default class Escena2 extends Phaser.Scene {
       null,
       this
     );
-
     this.physics.add.collider(
       this.grupoBalas,
       this.grupoEnemigosNave,
@@ -257,7 +269,7 @@ export default class Escena2 extends Phaser.Scene {
       null,
       this
     );
-    /*
+    // Colisión entre jugador y balas del boss
     this.physics.add.collider(
       this.jugador,
       this.grupoBalasBoss,
@@ -265,7 +277,6 @@ export default class Escena2 extends Phaser.Scene {
       null,
       this
     );
-*/
     // FIN COLISIONES
     this.textoDePuntaje = this.add.text(16, 16, "Puntaje: 0", {
       fontSize: "32px",
