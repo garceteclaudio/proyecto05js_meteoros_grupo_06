@@ -19,6 +19,9 @@ export default class Escena2 extends Phaser.Scene {
     this.boss = null; // Boss enemy
     this.grupoBalasBoss = null; // Group for boss bullets
     this.siguienteDisparoBoss = 0; // Next bullet firing time for the boss
+
+    this.frecuenciaGeneracionNormal = 2000; // 2 segundos
+    this.frecuenciaGeneracionBoss = 500; // 0.5 segundos
   }
   generarMeteoros() {
     if (this.juegoTerminado) return;
@@ -90,17 +93,18 @@ export default class Escena2 extends Phaser.Scene {
     this.juegoTerminado = true;
     enemigoNave.destroy();
   }
+
   /// BOSS
   aparecerBoss() {
     this.boss = this.physics.add.sprite(
       800,
-      Phaser.Math.Between(50, 550),
+      this.cameras.main.height / 2,
       "boss"
     );
     this.boss.setVelocityX(-200); // Mueve el boss a la izquierda
-
+  
     console.log("Boss ha aparecido y comenzará a disparar.");
-
+  
     // Iniciar disparos
     this.time.addEvent({
       delay: 500,
@@ -163,6 +167,8 @@ export default class Escena2 extends Phaser.Scene {
     // Reiniciar variables importantes
     this.juegoTerminado = false;
     this.puntaje = 0;
+    this.boss = null;
+    this.posicionParadaBoss = 700;
 
     // Crear fondo como tileSprite
     this.fondoEspacio = this.add.tileSprite(400, 300, 800, 600, "espacio");
@@ -170,7 +176,7 @@ export default class Escena2 extends Phaser.Scene {
     this.jugador.setCollideWorldBounds(true);
     this.jugador.setAngle(90);
 
-    this.time.delayedCall(3000, this.aparecerBoss, [], this);
+    //this.time.delayedCall(3000, this.aparecerBoss, [], this);
 
     this.grupoBalas = this.physics.add.group({
       defaultKey: "bala2",
@@ -205,10 +211,12 @@ export default class Escena2 extends Phaser.Scene {
 
     // Generar enemigosNave periódicamente
     this.time.addEvent({
-      delay: 1000,
+      delay: this.frecuenciaGeneracionNormal, // Usar frecuencia normal
       callback: this.generarEnemigosNave,
       callbackScope: this,
       loop: true,
+      // Agrega una propiedad para el evento
+      name: "generarEnemigosNave",
     });
 
     this.time.addEvent({
@@ -297,6 +305,27 @@ export default class Escena2 extends Phaser.Scene {
     this.fondoEspacio.tilePositionX -= 2;
 
     this.jugador.setVelocity(0);
+
+  // Verifica si el puntaje es 50 para hacer aparecer el boss
+  if (this.puntaje >= 50 && !this.boss) {
+    this.aparecerBoss();
+    
+    // Cambiar la frecuencia de generación al aparecer el boss
+    this.time.removeEvent("generarEnemigosNave"); // Eliminar el evento anterior
+    this.time.addEvent({
+      delay: this.frecuenciaGeneracionBoss, // Usar frecuencia alta
+      callback: this.generarEnemigosNave,
+      callbackScope: this,
+      loop: true,
+      name: "generarEnemigosNave",
+    });
+  }
+
+    if (this.boss && this.boss.x > this.posicionParadaBoss) {
+      this.boss.setVelocityX(-200); // Continuar moviéndose a la izquierda
+    } else if (this.boss) {
+      this.boss.setVelocityX(0); // Detener el boss
+    }
 
     if (this.cursors.left.isDown || this.teclas.left.isDown) {
       this.jugador.setVelocityX(-300);
