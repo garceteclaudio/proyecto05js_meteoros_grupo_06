@@ -1,8 +1,4 @@
 export default class Escena2 extends Phaser.Scene {
-  /*
-  test esto
-  
-  **/
   constructor() {
     super({ key: "Escena 2" });
     this.jugador = null;
