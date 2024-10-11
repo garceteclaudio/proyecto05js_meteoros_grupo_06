@@ -16,13 +16,12 @@ export default class Escena2 extends Phaser.Scene {
     this.sonidoBala = null;
     this.sonidoExplosion = null;
     this.fondoEspacio = null;
-    this.boss = null; // Boss enemy
-    this.grupoBalasBoss = null; // Group for boss bullets
-    this.siguienteDisparoBoss = 0; // Next bullet firing time for the boss
-
-    this.frecuenciaGeneracionNormal = 2000; // 2 segundos
-    this.frecuenciaGeneracionBoss = 500; // 0.5 segundos
+    /* PAUSADO MOMENTÁNEAMENTE
+    this.grupoBalasBoss = null;
+    this.siguienteDisparoBoss = 0;
+    */ 
   }
+  
   generarMeteoros() {
     if (this.juegoTerminado) return;
 
@@ -71,18 +70,10 @@ export default class Escena2 extends Phaser.Scene {
   }
 
   colisionBalaEnemigo(bala, enemigoNave) {
-    /* enemigoNave.vidas -= 1; // Reducir una vida por disparo
-    bala.destroy();
-
-    if (enemigoNave.vidas <= 0) {
-      enemigoNave.destroy();
-      this.sonidoExplosion.play();
-    }*/
     // Destruir meteoro y bala
     enemigoNave.destroy();
     bala.destroy();
 
-    // Reproducir el sonido de la bala
     this.sonidoExplosion.play();
   }
 
@@ -94,55 +85,34 @@ export default class Escena2 extends Phaser.Scene {
     enemigoNave.destroy();
   }
 
-  /// BOSS
-  aparecerBoss() {
-    this.boss = this.physics.add.sprite(
-      800,
-      this.cameras.main.height / 2,
-      "boss"
-    );
-    this.boss.setVelocityX(-200); // Mueve el boss a la izquierda
-  
-    console.log("Boss ha aparecido y comenzará a disparar.");
-  
-    // Iniciar disparos
+  /* PAUSADO MOMENTÁNEAMENTE
     this.time.addEvent({
       delay: 500,
       callback: this.dispararBalaBoss,
       callbackScope: this,
       loop: true,
     });
-  }
+  */
 
+  /* PAUSADO MOMENTÁNEAMENTE 
   dispararBalaBoss() {
     const tiempoActual = this.time.now;
 
-    // Verificar si es tiempo de disparar
     if (tiempoActual > this.siguienteDisparoBoss) {
       const balaBoss = this.grupoBalasBoss.get();
 
-      // Verificar si se obtuvo una bala
       if (balaBoss) {
-        // Colocar la bala en la posición del boss
         balaBoss.setActive(true);
         balaBoss.setVisible(true);
         balaBoss.setPosition(this.boss.x - 50, this.boss.y);
-        balaBoss.setVelocityX(-200); // La bala se mueve hacia la izquierda
+        balaBoss.setVelocityX(-200);
 
-        // Actualizar el tiempo para el próximo disparo
-        this.siguienteDisparoBoss = tiempoActual + 500; // Ajustar el intervalo de disparo
-        this.sonidoBala.play(); // Reproducir el sonido de la bala
+        this.siguienteDisparoBoss = tiempoActual + 500;
+        this.sonidoBala.play(); 
       }
     }
   }
-
-  colisionJugadorBalaBoss(jugador, bala) {
-    bala.destroy();
-    this.scene.start("GameOver", { puntaje: this.puntaje });
-    this.musicaFondo.stop();
-    this.puntaje = 0;
-  }
-  /// FIN BOSS
+  */
 
   preload() {
     this.load.image("espacio", "/public/resources/images/espacio.png");
@@ -156,37 +126,29 @@ export default class Escena2 extends Phaser.Scene {
     this.load.audio("musicaFondo", "/public/resources/sounds/9.mp3");
     this.load.audio("grito", "/public/resources/sounds/grito.mp3");
     this.load.audio("balaSonido", "/public/resources/sounds/balaSonido.mp3");
-    this.load.audio(
-      "sonidoExplosion",
-      "/public/resources/sounds/sonidoExplosion.mp3"
-    );
-    this.load.image("boss", "/public/resources/images/boss.png");
+    this.load.audio("sonidoExplosion","/public/resources/sounds/sonidoExplosion.mp3");
   }
 
   create() {
-    // Reiniciar variables importantes
     this.juegoTerminado = false;
     this.puntaje = 0;
-    this.boss = null;
-    this.posicionParadaBoss = 700;
 
-    // Crear fondo como tileSprite
     this.fondoEspacio = this.add.tileSprite(400, 300, 800, 600, "espacio");
     this.jugador = this.physics.add.sprite(100, 300, "nave", 0);
     this.jugador.setCollideWorldBounds(true);
     this.jugador.setAngle(90);
-
-    //this.time.delayedCall(3000, this.aparecerBoss, [], this);
 
     this.grupoBalas = this.physics.add.group({
       defaultKey: "bala2",
       maxSize: 50,
     });
 
+    /* PAUSADO MOMENTÁNEAMENTE
     this.grupoBalasBoss = this.physics.add.group({
-      defaultKey: "bala2", // Use a different key if needed
+      defaultKey: "bala2",
       maxSize: 50,
     });
+    */
 
     this.grupoMeteoros = this.physics.add.group();
     this.grupoEnemigosNave = this.physics.add.group();
@@ -209,14 +171,11 @@ export default class Escena2 extends Phaser.Scene {
       frameRate: 20,
     });
 
-    // Generar enemigosNave periódicamente
     this.time.addEvent({
-      delay: this.frecuenciaGeneracionNormal, // Usar frecuencia normal
+      delay: 4000,
       callback: this.generarEnemigosNave,
       callbackScope: this,
       loop: true,
-      // Agrega una propiedad para el evento
-      name: "generarEnemigosNave",
     });
 
     this.time.addEvent({
@@ -242,7 +201,6 @@ export default class Escena2 extends Phaser.Scene {
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
 
-    // Colisiones
     this.physics.add.collider(
       this.jugador,
       this.grupoMeteoros,
@@ -277,7 +235,8 @@ export default class Escena2 extends Phaser.Scene {
       null,
       this
     );
-    // Colisión entre jugador y balas del boss
+    
+    /* PAUSADO MOMENTÁNEAMENTE
     this.physics.add.collider(
       this.jugador,
       this.grupoBalasBoss,
@@ -285,7 +244,8 @@ export default class Escena2 extends Phaser.Scene {
       null,
       this
     );
-    // FIN COLISIONES
+    */
+ 
     this.textoDePuntaje = this.add.text(16, 16, "Puntaje: 0", {
       fontSize: "32px",
       fill: "#fff",
@@ -301,31 +261,9 @@ export default class Escena2 extends Phaser.Scene {
   update() {
     if (this.juegoTerminado) return;
 
-    // Mover el fondo hacia la izquierda
     this.fondoEspacio.tilePositionX -= 2;
 
     this.jugador.setVelocity(0);
-
-  // Verifica si el puntaje es 50 para hacer aparecer el boss
-  if (this.puntaje >= 50 && !this.boss) {
-    this.aparecerBoss();
-    
-    // Cambiar la frecuencia de generación al aparecer el boss
-    this.time.removeEvent("generarEnemigosNave"); // Eliminar el evento anterior
-    this.time.addEvent({
-      delay: this.frecuenciaGeneracionBoss, // Usar frecuencia alta
-      callback: this.generarEnemigosNave,
-      callbackScope: this,
-      loop: true,
-      name: "generarEnemigosNave",
-    });
-  }
-
-    if (this.boss && this.boss.x > this.posicionParadaBoss) {
-      this.boss.setVelocityX(-200); // Continuar moviéndose a la izquierda
-    } else if (this.boss) {
-      this.boss.setVelocityX(0); // Detener el boss
-    }
 
     if (this.cursors.left.isDown || this.teclas.left.isDown) {
       this.jugador.setVelocityX(-300);
