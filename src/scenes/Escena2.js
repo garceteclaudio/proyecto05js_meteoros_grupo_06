@@ -5,6 +5,7 @@ export default class Escena2 extends Phaser.Scene {
     this.grupoMeteoros = null;
     this.grupoBalas = null;
     this.grupoEnemigosNave = null;
+    this.boss = null; 
     this.cursors = null;
     this.teclas = null;
     this.puntaje = 0;
@@ -16,6 +17,9 @@ export default class Escena2 extends Phaser.Scene {
     this.sonidoBala = null;
     this.sonidoExplosion = null;
     this.fondoEspacio = null;
+    this.bossAparecido = false;
+    this.bossVelocidad = 100;
+    this.generarEnemigosEvento = null;
     /* PAUSADO MOMENTÁNEAMENTE
     this.grupoBalasBoss = null;
     this.siguienteDisparoBoss = 0;
@@ -55,8 +59,13 @@ export default class Escena2 extends Phaser.Scene {
 
   incrementarPuntaje() {
     if (!this.juegoTerminado) {
-      this.puntaje += 1;
-      this.textoDePuntaje.setText(`Puntaje: ${this.puntaje}`);
+        this.puntaje += 1;
+        this.textoDePuntaje.setText(`Puntaje: ${this.puntaje}`);
+
+        //Cuando el puntaje llegue a 50 el boss aparecerá
+        if (this.puntaje === 50 && !this.bossAparecido) {
+          this.aparecerBoss();
+      }
     }
   }
 
@@ -70,7 +79,6 @@ export default class Escena2 extends Phaser.Scene {
   }
 
   colisionBalaEnemigo(bala, enemigoNave) {
-    // Destruir meteoro y bala
     enemigoNave.destroy();
     bala.destroy();
 
@@ -83,6 +91,32 @@ export default class Escena2 extends Phaser.Scene {
     this.puntaje = 0;
     this.juegoTerminado = true;
     enemigoNave.destroy();
+  }
+
+  aparecerBoss() {
+    this.boss = this.physics.add.sprite(1000, 300, "boss");
+    this.bossAparecido = true;
+
+    //Manejo del evento para generar más enemigos cuando aparezca el boss
+    if (this.generarEnemigosEvento) {
+      this.generarEnemigosEvento.remove();
+    }
+
+    this.generarEnemigosEvento = this.time.addEvent({
+      delay: 500,
+      callback: this.generarEnemigosNave,
+      callbackScope: this,
+      loop: true,
+    });
+
+    //Configura la colisión entre las balas y el boss
+    this.physics.add.collider(
+      this.grupoBalas,
+      this.boss,
+      this.destruirBoss,
+      null,
+      this
+    );
   }
 
   /* PAUSADO MOMENTÁNEAMENTE
@@ -123,6 +157,7 @@ export default class Escena2 extends Phaser.Scene {
     this.load.image("meteoro", "/public/resources/images/meteoro.png");
     this.load.image("bala2", "/public/resources/images/balaHorizontal.png");
     this.load.image("enemigoNave", "/public/resources/images/enemigoNave.png");
+    this.load.image("boss", "/public/resources/images/boss.png");
     this.load.audio("musicaFondo", "/public/resources/sounds/9.mp3");
     this.load.audio("grito", "/public/resources/sounds/grito.mp3");
     this.load.audio("balaSonido", "/public/resources/sounds/balaSonido.mp3");
@@ -132,6 +167,7 @@ export default class Escena2 extends Phaser.Scene {
   create() {
     this.juegoTerminado = false;
     this.puntaje = 0;
+    this.bossAparecido = false;
 
     this.fondoEspacio = this.add.tileSprite(400, 300, 800, 600, "espacio");
     this.jugador = this.physics.add.sprite(100, 300, "nave", 0);
@@ -201,6 +237,7 @@ export default class Escena2 extends Phaser.Scene {
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
 
+    //INICIO | Colisiones
     this.physics.add.collider(
       this.jugador,
       this.grupoMeteoros,
@@ -235,6 +272,14 @@ export default class Escena2 extends Phaser.Scene {
       null,
       this
     );
+
+    this.physics.add.collider(
+      this.grupoBalas,
+      this.boss,
+      this.destruirBoss,
+      null,
+      this
+    );
     
     /* PAUSADO MOMENTÁNEAMENTE
     this.physics.add.collider(
@@ -245,6 +290,8 @@ export default class Escena2 extends Phaser.Scene {
       this
     );
     */
+
+    //FIN | Colisiones
  
     this.textoDePuntaje = this.add.text(16, 16, "Puntaje: 0", {
       fontSize: "32px",
@@ -256,6 +303,13 @@ export default class Escena2 extends Phaser.Scene {
     this.sonidoGrito = this.sound.add("grito");
     this.sonidoBala = this.sound.add("balaSonido");
     this.sonidoExplosion = this.sound.add("sonidoExplosion");
+  }
+
+  destruirBoss(bala, boss) {
+    boss.destroy();
+    bala.destroy();
+    this.sonidoExplosion.play();
+    this.boss = null;
   }
 
   update() {
@@ -283,6 +337,15 @@ export default class Escena2 extends Phaser.Scene {
 
     if (this.teclas.space.isDown) {
       this.dispararBala();
+    }
+
+    //Manejo del movimiento de aparición del boss
+    if (this.bossAparecido && this.boss) {
+      if (this.boss.x > 600) {
+        this.boss.x -= this.bossVelocidad * this.game.loop.delta / 1000; // Mueve el boss hacia la izquierda
+      } else {
+        this.boss.x = 600;
+      }
     }
   }
 }
