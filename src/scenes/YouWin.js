@@ -20,10 +20,10 @@ export default class YouWin extends Phaser.Scene {
   create() {
     this.add.image(400, 300, "espacio").setOrigin(0.5);
 
-    this.add.image(400, 400, "gato").setOrigin(0.5);
+    this.add.image(400, 350, "gato").setOrigin(0.5);
 
     this.add
-      .text(400, 100, "¡GANASTE EL JUEGO!", {
+      .text(400, 80, "¡GANASTE EL JUEGO!", {
         fontSize: "30px",
         fill: "#fff",
         fontStyle: "bold",
@@ -32,7 +32,7 @@ export default class YouWin extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(400, 150, `Puntaje: ${this.puntaje}`, {
+      .text(400, 130, `Puntaje: ${this.puntaje}`, {
         fontSize: "30px",
         fill: "#fff",
         fontStyle: "bold",
@@ -41,7 +41,7 @@ export default class YouWin extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(400, 570, "Escoge una escena para jugar de nuevo.", {
+      .text(400, 540, "Escoge una escena para jugar de nuevo.", {
         fontSize: "20px",
         fill: "#fff",
         fontStyle: "bold",
