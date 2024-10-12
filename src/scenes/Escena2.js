@@ -310,6 +310,9 @@ export default class Escena2 extends Phaser.Scene {
     bala.destroy();
     this.sonidoExplosion.play();
     this.boss = null;
+
+    this.musicaFondo.stop();
+    this.scene.start("YouWin", { puntaje: this.puntaje });
   }
 
   update() {
