@@ -50,12 +50,47 @@ export default class Escena1 extends Phaser.Scene {
     this.sonidoExplosion.play();
   }
 
+  activarDestello() {
+    const destello = this.add.image(400, 300, "destello");
+    const alerta = this.sound.add("alerta");
+    destello.setScale(0.65);
+    let visible = false;
+    alerta.stop();
+  
+    //Crear un intervalo para generar el efecto antes del cambio de escenas
+    const intervalo = setInterval(() => {
+      visible = !visible;
+      destello.setVisible(visible);
+      alerta.play();
+    }, 250); //El intervalo se ejecuta cada de 150ms
+
+    setTimeout(() => {
+      clearInterval(intervalo);
+      destello.destroy();
+      alerta.stop();
+    }, 2500); //El intervalo se termina luego de 2500ms
+    
+  }
+  
   incrementarPuntaje() {
     if (!this.juegoTerminado) {
       this.puntaje += 1;
       this.textoDePuntaje.setText(`Puntaje: ${this.puntaje}`);
+
+    //Efecto de destello al alcanzar los puntos establecidos
+    if (this.puntaje === 50) {
+      this.activarDestello();
+    }
+
+      //Cambiar a Escena2 cuando se alcancen los puntos establecidos
+      if (this.puntaje >= 75) {
+        this.musicaFondo.stop();
+        this.scene.stop("Escena 1");
+        this.scene.start("Escena 2");
+      }
     }
   }
+  
 
   preload() {
     this.load.image("espacio", "/public/resources/images/espacio.png");
@@ -71,13 +106,15 @@ export default class Escena1 extends Phaser.Scene {
     this.load.audio("musicaFondo", "/public/resources/sounds/9.mp3");
     this.load.audio("grito", "/public/resources/sounds/grito.mp3");
     this.load.audio("balaSonido", "/public/resources/sounds/balaSonido.mp3");
-    this.load.audio(
-      "sonidoExplosion",
-      "/public/resources/sounds/sonidoExplosion.mp3"
-    );
+    this.load.audio("sonidoExplosion","/public/resources/sounds/sonidoExplosion.mp3");
+    this.load.image("destello", "/public/resources/images/destello.png");
+    this.load.audio("alerta", "/public/resources/sounds/alerta.mp3");
   }
 
   create() {
+    //Resetear eñ puntaje al crear la escena 
+    this.puntaje = 0;
+
     this.add.image(400, 300, "espacio");
     this.jugador = this.physics.add.sprite(400, 550, "nave", 0);
     this.jugador.setCollideWorldBounds(true);
