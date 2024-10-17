@@ -61,7 +61,7 @@ export default class Escena2 extends Phaser.Scene {
         this.textoDePuntaje.setText(`Puntaje: ${this.puntaje}`);
 
         //Cuando el puntaje llegue a 50 el boss aparecerá
-        if (this.puntaje === 50 && !this.bossAparecido) {
+        if (this.puntaje === 500 && !this.bossAparecido) {
           this.aparecerBoss();
       }
     }

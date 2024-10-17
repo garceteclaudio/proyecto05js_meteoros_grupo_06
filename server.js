@@ -16,7 +16,7 @@ app.use("/node_modules", express.static(__dirname + "/node_modules"));
 
 //listening
 app.listen(5000, () => {
-  console.log("Iniciando el servidore Node...");
+  console.log("Iniciando el servidor Node...");
   console.log("¡El servidor node se está ejecutando!");
 });
 

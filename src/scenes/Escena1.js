@@ -62,13 +62,13 @@ export default class Escena1 extends Phaser.Scene {
       visible = !visible;
       destello.setVisible(visible);
       alerta.play();
-    }, 250); //El intervalo se ejecuta cada de 150ms
+    }, 350); //El intervalo se ejecuta cada de 150ms
 
     setTimeout(() => {
       clearInterval(intervalo);
       destello.destroy();
       alerta.stop();
-    }, 2500); //El intervalo se termina luego de 2500ms
+    }, 8000); //El intervalo se termina luego de 2500ms
     
   }
   
@@ -78,12 +78,12 @@ export default class Escena1 extends Phaser.Scene {
       this.textoDePuntaje.setText(`Puntaje: ${this.puntaje}`);
 
     //Efecto de destello al alcanzar los puntos establecidos
-    if (this.puntaje === 50) {
+    if (this.puntaje === 425) {
       this.activarDestello();
     }
 
       //Cambiar a Escena2 cuando se alcancen los puntos establecidos
-      if (this.puntaje >= 75) {
+      if (this.puntaje >= 500) {
         this.musicaFondo.stop();
         this.scene.stop("Escena 1");
         this.scene.start("Escena 2");
